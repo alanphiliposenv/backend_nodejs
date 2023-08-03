@@ -1,5 +1,10 @@
-import express from "express";
+import express, { NextFunction } from "express";
 import EmployeeService from "../service/employee.service";
+import { plainToInstance } from "class-transformer";
+import EmployeeDto from "../dto/employee.dto";
+import { validate } from "class-validator";
+import IdDto from "../dto/id.dto";
+import ValidationException from "../exceptions/validation.exception";
 
 class EmployeeController {
     public router: express.Router;
@@ -21,34 +26,73 @@ class EmployeeController {
         res.status(200).send(employees);
     }
 
-    getEmployeeById = async (req: express.Request, res: express.Response) => {
-        const id: number = Number(req.params.id);
-        const employee = await this.employeeService.getEmployeeById(id);
-        res.status(200).send(employee);
+    getEmployeeById = async (req: express.Request, res: express.Response, next: NextFunction) => {
+        try {
+            const idDto = plainToInstance(IdDto, req.params);
+            const errors = await validate(idDto);
+            if (errors.length > 0) {
+                throw new ValidationException(400, "Validation Error", errors);
+            }
+            const employee = await this.employeeService.getEmployeeById(idDto.id);
+            res.status(200).send(employee);
+        } catch (error) {
+            next(error);
+        }
     }
 
-    createEmployee = async (req: express.Request, res: express.Response) => {
-        const name: string = req.body.name;
-        const email: string = req.body.email;
-        const createdEmployee = await this.employeeService.createEmployee(name, email);
-        res.status(201).send(createdEmployee);
+    createEmployee = async (req: express.Request, res: express.Response, next: NextFunction) => {
+        try {
+            const employeeDto = plainToInstance(EmployeeDto, req.body);
+            const errors = await validate(employeeDto);
+            if (errors.length > 0) {
+                throw new ValidationException(400, "Validation Error", errors);
+            }
+            const createdEmployee = await this.employeeService.createEmployee(
+                employeeDto.name,
+                employeeDto.email,
+                employeeDto.address
+            );
+            res.status(201).send(createdEmployee);
+        } catch (error) {
+            next(error);
+        }
     }
 
-
-    updateEmployee = async (req: express.Request, res: express.Response) => {
-        const id: number = Number(req.params.id);
-        const name: string = req.body.name;
-        const email: string = req.body.email;
-        const updatedEmployee = await this.employeeService.updateEmployee(id, name, email);
-        res.status(200).send(updatedEmployee);
+    updateEmployee = async (req: express.Request, res: express.Response, next: NextFunction) => {
+        try {
+            const idDto = plainToInstance(IdDto, req.params);
+            const idErrors = await validate(idDto);
+            if (idErrors.length > 0) {
+                throw new ValidationException(400, "Validation Error", idErrors);
+            }
+            const employeeDto = plainToInstance(EmployeeDto, req.body);
+            const empErrors = await validate(employeeDto);
+            if (empErrors.length > 0) {
+                throw new ValidationException(400, "Validation Error", empErrors);
+            }
+            const updatedEmployee = await this.employeeService.updateEmployee(
+                idDto.id,
+                employeeDto.name,
+                employeeDto.email,
+                employeeDto.address
+            );
+            res.status(200).send(updatedEmployee);
+        } catch (error) {
+            next(error);
+        }
     }
 
-    removeEmployee = async (req: express.Request, res: express.Response) => {
-        const id: number = Number(req.params.id);
-        if (await this.employeeService.removeEmployee(id)) {
-            res.status(200).end();
-        } else {
-            res.status(404).end();
+    removeEmployee = async (req: express.Request, res: express.Response, next: NextFunction) => {
+        try {
+            const idDto = plainToInstance(IdDto, req.params);
+            const errors = await validate(idDto);
+            if (errors.length > 0) {
+                throw new ValidationException(400, "Validation Error", errors);
+            }
+            await this.employeeService.removeEmployee(idDto.id);
+            res.status(204).send();
+        } catch (error) {
+            next(error);
         }
     }
 }
