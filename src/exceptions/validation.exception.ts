@@ -1,15 +1,12 @@
 import { ValidationError } from "class-validator";
 import HttpException from "./http.exception";
-
-type ValidationErrors = {
-    [key: string]: string[] | ValidationErrors
-}
+import { ValidationErrors } from "../util/errors.type";
 
 class ValidationException extends HttpException {
     public errors: ValidationErrors
 
-    constructor(status: number, message: string, errors: ValidationError[]) {
-        super(status, message);
+    constructor(errors: ValidationError[]) {
+        super(400, "Validation Error");
         this.errors = this.validationErrorParser(errors);
     }
 

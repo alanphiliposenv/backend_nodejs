@@ -1,21 +1,15 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request } from "express";
 import HttpException from "../exceptions/http.exception";
 import ValidationException from "../exceptions/validation.exception";
+import { ResponseWithPayload } from "../util/responseWithPayload.interface";
 
-function errorMiddlerware(error: Error, req: Request, res: Response, next: NextFunction) {
+function errorMiddlerware(error: Error, _req: Request, res: ResponseWithPayload, _next: NextFunction) {
     if (error instanceof ValidationException) {
-        res.status(error.status).send({
-            message: error.message,
-            errors: error.errors,
-        });
+        res.status(error.status).sendPayload(error.message, null, error.errors);
     } else if (error instanceof HttpException) {
-        res.status(error.status).send({
-            message: error.message,
-        });
+        res.status(error.status).sendPayload(error.message, null, null);
     } else {
-        res.status(500).send({
-            message: error.message
-        });
+        res.sendPayload(error.message, null, null);
     }
 }
 

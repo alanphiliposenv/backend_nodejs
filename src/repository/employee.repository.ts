@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { FindOptionsRelations, Repository } from "typeorm";
 import Employee from "../entity/employee.entity";
 
 class EmployeeRepository {
@@ -7,21 +7,23 @@ class EmployeeRepository {
     ) { }
 
     findAllEmployee(): Promise<Employee[]> {
-        return this.employeeRepository.find({
-            relations: {
-                address: true,
-            }
-        });
+        return this.employeeRepository.find();
     }
 
-    findOneEmployeeById(id: number): Promise<Employee> {
+    findOneEmployeeById(id: number, relations?: FindOptionsRelations<Employee>): Promise<Employee> {
         return this.employeeRepository.findOne({
             where: {
                 id: id,
             },
-            relations: {
-                address: true,
-            }
+            relations
+        });
+    }
+
+    findOneEmployeeByEmail(email: string): Promise<Employee> {
+        return this.employeeRepository.findOne({
+            where: {
+                email: email
+            },
         });
     }
 
