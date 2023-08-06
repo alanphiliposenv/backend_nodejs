@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Router } from "express";
 import DepartmentService from "../service/department.service";
-import authenticateMiddlerware from "../middleware/authenticate.middleware";
-import authorizeMiddlerware from "../middleware/authorize.middleware";
+import authenticateMiddleware from "../middleware/authenticate.middleware";
+import authorizeMiddleware from "../middleware/authorize.middleware";
 import { ResponseWithPayload } from "../util/responseWithPayload.interface";
 import { plainToInstance } from "class-transformer";
 import IdDto from "../dto/id.dto";
@@ -17,11 +17,11 @@ class DepartmentController {
         private departmentService: DepartmentService
     ) {
         this.router = express.Router();
-        this.router.get("/", authenticateMiddlerware, this.getAllDepartments);
-        this.router.get("/:id", authenticateMiddlerware, this.getDepartmentById);
-        this.router.post("/", authenticateMiddlerware, authorizeMiddlerware([Role.HR]), this.createDepartment);
-        this.router.put("/:id", authenticateMiddlerware, authorizeMiddlerware([Role.HR]), this.updateDepartment);
-        this.router.delete("/:id", authenticateMiddlerware, authorizeMiddlerware([Role.HR]), this.removeDepartment);
+        this.router.get("/", authenticateMiddleware, this.getAllDepartments);
+        this.router.get("/:id", authenticateMiddleware, this.getDepartmentById);
+        this.router.post("/", authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.createDepartment);
+        this.router.put("/:id", authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.updateDepartment);
+        this.router.delete("/:id", authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.removeDepartment);
     }
 
     getAllDepartments = async (_req: Request, res: ResponseWithPayload, next: NextFunction) => {

@@ -1,42 +1,42 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString, ValidateNested } from "class-validator";
+import { IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 import Address from "../entity/address.entity";
-import AddressDto from "./address.dto";
 import { Type } from "class-transformer";
 import { Role } from "../util/role.enum";
+import UpdateAddressDto from "./updateAddress.dto";
 
-class EmployeeDto {
-    @IsNotEmpty()
+class UpdateEmployeeDto {
     @IsString()
+    @IsOptional()
     name: string;
 
-    @IsNotEmpty()
     @IsString()
+    @IsOptional()
     username: string;
 
-    @IsNotEmpty()
     @IsString()
+    @IsOptional()
     password: string;
 
-    @IsNotEmpty()
-    @ValidateNested({each: true})
-    @Type(() => AddressDto)
+    @ValidateNested()
+    @Type(() => UpdateAddressDto)
+    @IsOptional()
     address: Address;
 
-    @IsNotEmpty()
     @IsEnum(Role)
+    @IsOptional()
     role: Role;
 
-    @IsNotEmpty()
     @IsString()
+    @IsOptional()
     joiningDate: string;
 
-    @IsNotEmpty()
     @IsNumber()
+    @IsOptional()
     experience: number;
 
-    @IsNotEmpty()
     @IsNumber()
+    @IsOptional()
     departmentId: number;
 }
 
-export default EmployeeDto;
+export default UpdateEmployeeDto;

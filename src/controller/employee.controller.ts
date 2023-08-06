@@ -10,6 +10,7 @@ import authorizeMiddleware from "../middleware/authorize.middleware";
 import { Role } from "../util/role.enum";
 import { ResponseWithPayload } from "../util/responseWithPayload.interface";
 import LoginEmployeeDto from "../dto/loginEmployee.dto";
+import UpdateEmployeeDto from "../dto/updateEmployee.dto";
 
 class EmployeeController {
     public router: express.Router;
@@ -21,9 +22,10 @@ class EmployeeController {
 
         this.router.get("/", authenticateMiddleware, this.getAllEmployees);
         this.router.get("/:id", authenticateMiddleware, this.getEmployeeById);
-        this.router.post("/", authenticateMiddleware, authorizeMiddleware([Role.HR]), this.createEmployee);
-        this.router.put("/:id", authenticateMiddleware, authorizeMiddleware([Role.HR]), this.updateEmployee);
-        this.router.delete("/:id", authenticateMiddleware, authorizeMiddleware([Role.HR]), this.removeEmployee);
+        this.router.post("/",  authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.createEmployee);
+        this.router.put("/:id", authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.updateReplaceEmployee);
+        this.router.patch("/:id", authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.updateEmployee);
+        this.router.delete("/:id", authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.removeEmployee);
         this.router.post("/login", this.loginEmployee);
     }
 
@@ -64,7 +66,7 @@ class EmployeeController {
         }
     }
 
-    updateEmployee = async (req: express.Request, res: ResponseWithPayload, next: NextFunction) => {
+    updateReplaceEmployee = async (req: express.Request, res: ResponseWithPayload, next: NextFunction) => {
         try {
             const idDto = plainToInstance(IdDto, req.params);
             const idErrors = await validate(idDto);
@@ -76,7 +78,26 @@ class EmployeeController {
             if (empErrors.length > 0) {
                 throw new ValidationException(empErrors);
             }
-            const updatedEmployee = await this.employeeService.updateEmployee(idDto.id, employeeDto);
+            const updatedEmployee = await this.employeeService.updateReplaceEmployee(idDto.id, employeeDto);
+            res.status(200).sendPayload("OK", updatedEmployee, null);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    updateEmployee = async (req: express.Request, res: ResponseWithPayload, next: NextFunction) => {
+        try {
+            const idDto = plainToInstance(IdDto, req.params);
+            const idErrors = await validate(idDto);
+            if (idErrors.length > 0) {
+                throw new ValidationException(idErrors);
+            }
+            const updateEmployeeDto = plainToInstance(UpdateEmployeeDto, req.body);
+            const empErrors = await validate(updateEmployeeDto);
+            if (empErrors.length > 0) {
+                throw new ValidationException(empErrors);
+            }
+            const updatedEmployee = await this.employeeService.updateEmployee(idDto.id, updateEmployeeDto);
             res.status(200).sendPayload("OK", updatedEmployee, null);
         } catch (error) {
             next(error);
@@ -99,7 +120,6 @@ class EmployeeController {
 
     loginEmployee = async (req: express.Request, res: ResponseWithPayload, next: NextFunction) => {
         try {
-            // const { email, password } = req.body;
             const loginEmployeeDto = plainToInstance(LoginEmployeeDto, req.body);
             const errors = await validate(loginEmployeeDto);
             if (errors.length > 0) {

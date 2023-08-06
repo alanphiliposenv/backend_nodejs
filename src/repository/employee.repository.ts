@@ -19,10 +19,10 @@ class EmployeeRepository {
         });
     }
 
-    findOneEmployeeByEmail(email: string): Promise<Employee> {
+    findOneEmployeeByUsername(username: string): Promise<Employee> {
         return this.employeeRepository.findOne({
             where: {
-                email: email
+                username
             },
         });
     }

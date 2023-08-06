@@ -1,4 +1,4 @@
-import EmployeeDto from "../dto/employee.dto";
+import UpdateEmployeeDto from "../dto/employee.dto";
 import Employee from "../entity/employee.entity";
 import HttpException from "../exceptions/http.exception";
 import EmployeeRepository from "../repository/employee.repository";
@@ -26,7 +26,7 @@ class EmployeeService {
         return employee;
     }
 
-    async createEmployee(employeeDto: EmployeeDto): Promise<Employee> {
+    async createEmployee(employeeDto: UpdateEmployeeDto): Promise<Employee> {
         const department = await this.departmentService.getDepartmentById(employeeDto.departmentId);
         if (!department) {
             throw new HttpException(404, "Department not found");
@@ -34,9 +34,11 @@ class EmployeeService {
 
         const newEmployee = new Employee;
         newEmployee.name = employeeDto.name;
-        newEmployee.email = employeeDto.email;
+        newEmployee.username = employeeDto.username;
         newEmployee.password = await bcrypt.hash(employeeDto.password, 10);
         newEmployee.address = employeeDto.address;
+        newEmployee.joiningDate = employeeDto.joiningDate;
+        newEmployee.experience = employeeDto.experience;
         newEmployee.role = employeeDto.role;
         newEmployee.departmentId = department.id;
 
@@ -44,7 +46,7 @@ class EmployeeService {
     }
 
 
-    async updateEmployee(id: number, employeeDto: EmployeeDto): Promise<Employee | null> {
+    async updateReplaceEmployee(id: number, employeeDto: UpdateEmployeeDto): Promise<Employee | null> {
         const employee = await this.employeeRepository.findOneEmployeeById(id, { address: true });
         if (!employee) {
             throw new HttpException(404, `Employee not Found with id: ${id}`)
@@ -56,11 +58,73 @@ class EmployeeService {
         }
 
         employee.name = employeeDto.name;
-        employee.email = employeeDto.email;
-        employee.address.line1 = employeeDto.address.line1;
-        employee.address.pincode = employeeDto.address.pincode;
+        employee.username = employeeDto.username;
+        employee.address = {
+            ...employee.address,
+            address_line_1: employeeDto.address.address_line_1,
+            address_line_2: employeeDto.address.address_line_2,
+            city: employeeDto.address.city,
+            state: employeeDto.address.state,
+            country: employeeDto.address.country,
+            pincode: employeeDto.address.pincode,
+        };
         employee.role = employeeDto.role;
+        employee.experience = employeeDto.experience;
         employee.departmentId = department.id;
+
+        return this.employeeRepository.saveEmployee(employee);
+    }
+
+    async updateEmployee(id: number, employeeDto: UpdateEmployeeDto): Promise<Employee | null> {
+        const employee = await this.employeeRepository.findOneEmployeeById(id, { address: true });
+        if (!employee) {
+            throw new HttpException(404, `Employee not Found with id: ${id}`)
+        }
+
+        if (employeeDto.departmentId) {
+            const department = await this.departmentService.getDepartmentById(employeeDto.departmentId);
+            if (!department) {
+                throw new HttpException(404, "Department not found");
+            }
+            employee.departmentId = department.id;
+        }
+
+        if (employeeDto.name) {
+            employee.name = employeeDto.name;
+        }
+
+        if (employeeDto.username) {
+            employee.username = employeeDto.username;
+        }
+
+        if (employeeDto.role) {
+            employee.role = employeeDto.role;
+        }
+
+        if (employeeDto.experience) {
+            employee.experience = employeeDto.experience;
+        }
+
+        if (employeeDto.address) {
+            if (employeeDto.address.address_line_1) {
+                employee.address.address_line_1 = employeeDto.address.address_line_1;
+            }
+            if (employeeDto.address.address_line_2) {
+                employee.address.address_line_2 = employeeDto.address.address_line_2;
+            }
+            if (employeeDto.address.city) {
+                employee.address.city = employeeDto.address.city;
+            }
+            if (employeeDto.address.state) {
+                employee.address.state = employeeDto.address.state;
+            }
+            if (employeeDto.address.address_line_1) {
+                employee.address.address_line_1 = employeeDto.address.address_line_1;
+            }
+            if (employeeDto.address.pincode) {
+                employee.address.pincode = employeeDto.address.pincode;
+            }
+        }
 
         return this.employeeRepository.saveEmployee(employee);
     }
@@ -74,17 +138,17 @@ class EmployeeService {
     }
 
     async loginEmployee(loginEmployeeDto: LoginEmployeeDto): Promise<{ token: string, employeeDetails: Employee }> {
-        const employee = await this.employeeRepository.findOneEmployeeByEmail(loginEmployeeDto.email);
+        const employee = await this.employeeRepository.findOneEmployeeByUsername(loginEmployeeDto.username);
         if (!employee) {
-            throw new HttpException(401, "Incorrect email or password");
+            throw new HttpException(401, "Incorrect username or password");
         }
         const result = await bcrypt.compare(loginEmployeeDto.password, employee.password);
         if (!result) {
-            throw new HttpException(401, "Incorrect email or password");
+            throw new HttpException(401, "Incorrect username or password");
         }
         const payload: jwtPayload = {
             name: employee.name,
-            email: employee.email,
+            username: employee.username,
             role: employee.role,
         }
         const token = jwt.sign(payload, process.env.JWT_SECRET, {

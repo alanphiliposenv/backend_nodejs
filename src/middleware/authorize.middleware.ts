@@ -3,7 +3,7 @@ import { RequestWithUser } from "../util/requestWithUser.interface";
 import HttpException from "../exceptions/http.exception";
 import { Role } from "../util/role.enum";
 
-function authorizeMiddlerware(roles: Role[]): RequestHandler {
+function authorizeMiddleware(roles: Role[]): RequestHandler {
     return (req: RequestWithUser, _res: Response, next: NextFunction) => {
         try {
             const role = req.role;
@@ -17,4 +17,4 @@ function authorizeMiddlerware(roles: Role[]): RequestHandler {
     }
 }
 
-export default authorizeMiddlerware;
+export default authorizeMiddleware;

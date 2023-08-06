@@ -3,12 +3,12 @@ import jsonwebtoken from "jsonwebtoken";
 import { jwtPayload } from "../util/jwtPayload.type";
 import { RequestWithUser } from "../util/requestWithUser.interface";
 
-function authenticateMiddlerware(req: RequestWithUser, _res: Response, next: NextFunction) {
+function authenticateMiddleware(req: RequestWithUser, _res: Response, next: NextFunction) {
     try {
         const token = getTokenFromRequestHeader(req);
         const payload: jwtPayload = jsonwebtoken.verify(token, process.env.JWT_SECRET) as jwtPayload;
         req.name = payload.name;
-        req.email = payload.email;
+        req.username = payload.username;
         req.role = payload.role;
         next();
     } catch (error) {
@@ -22,4 +22,4 @@ const getTokenFromRequestHeader = (req: Request) => {
     return token;
 }
 
-export default authenticateMiddlerware;
+export default authenticateMiddleware;

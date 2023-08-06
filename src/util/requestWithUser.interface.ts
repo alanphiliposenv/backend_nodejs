@@ -3,6 +3,6 @@ import { RequestWithId } from "./requestWithId.interface";
 
 export interface RequestWithUser extends RequestWithId {
     name: string;
-    email: string;
+    username: string;
     role: Role;
 }

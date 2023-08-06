@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Router } from "express";
 import { ResponseWithPayload } from "../util/responseWithPayload.interface";
 import RoleService from "../service/role.service";
+import authenticateMiddleware from "../middleware/authenticate.middleware";
 
 class RoleController {
     public router: Router;
@@ -11,7 +12,7 @@ class RoleController {
         this.router = express.Router();
         this.roleService = new RoleService();
 
-        this.router.get("/", this.getAllRoles);
+        this.router.get("/", authenticateMiddleware, this.getAllRoles);
     }
 
     getAllRoles = (_req: Request, res: ResponseWithPayload, next: NextFunction) => {

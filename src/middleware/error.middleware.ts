@@ -4,6 +4,7 @@ import ValidationException from "../exceptions/validation.exception";
 import { ResponseWithPayload } from "../util/responseWithPayload.interface";
 import { RequestWithId } from "../util/requestWithId.interface";
 import logger from "../util/logger.util";
+import { JsonWebTokenError } from "jsonwebtoken";
 
 function errorMiddlerware(error: Error, req: RequestWithId, res: ResponseWithPayload, _next: NextFunction) {
     if (error instanceof ValidationException) {
@@ -11,7 +12,9 @@ function errorMiddlerware(error: Error, req: RequestWithId, res: ResponseWithPay
     } else if (error instanceof HttpException) {
         logger.warn(`${req.id} ${error.status} ${error.message}`);
         res.status(error.status).sendPayload(error.message, null, null);
-    } else {
+    } else if (error instanceof JsonWebTokenError) {
+        res.status(403).sendPayload(error.message, null, null);
+    }else {
         logger.error(`${req.id} 500 ${error.message}`);
         res.sendPayload(error.message, null, null);
     }
