@@ -10,6 +10,7 @@ import initialzeResponseMiddleware from "./middleware/initializeResponse.middlew
 import departmentRouter from "./routes/department.route"
 import employeeRouter from "./routes/employee.route"
 import roleRouter from "./routes/role.route";
+import logger from "./util/logger.util";
 
 const server = express();
 
@@ -32,6 +33,6 @@ server.use(errorMiddlerware);
 (async () => {
     await dataSource.initialize();
     server.listen(3000, () => {
-        console.log("Server listening on 3000")
+        logger.info("Server listening on 3000")
     });
 })();

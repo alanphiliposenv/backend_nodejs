@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { jwtPayload } from "../util/jwtPayload.type";
 import DepartmentService from "./department.service";
+import LoginEmployeeDto from "../dto/loginEmployee.dto";
 
 class EmployeeService {
     constructor(
@@ -72,12 +73,12 @@ class EmployeeService {
         await this.employeeRepository.removeEmployee(employee);
     }
 
-    async loginEmployee(email: string, password: string): Promise<{ token: string, employeeDetails: Employee }> {
-        const employee = await this.employeeRepository.findOneEmployeeByEmail(email);
+    async loginEmployee(loginEmployeeDto: LoginEmployeeDto): Promise<{ token: string, employeeDetails: Employee }> {
+        const employee = await this.employeeRepository.findOneEmployeeByEmail(loginEmployeeDto.email);
         if (!employee) {
             throw new HttpException(401, "Incorrect email or password");
         }
-        const result = await bcrypt.compare(password, employee.password);
+        const result = await bcrypt.compare(loginEmployeeDto.password, employee.password);
         if (!result) {
             throw new HttpException(401, "Incorrect email or password");
         }

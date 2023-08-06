@@ -9,6 +9,7 @@ import authenticateMiddleware from "../middleware/authenticate.middleware";
 import authorizeMiddleware from "../middleware/authorize.middleware";
 import { Role } from "../util/role.enum";
 import { ResponseWithPayload } from "../util/responseWithPayload.interface";
+import LoginEmployeeDto from "../dto/loginEmployee.dto";
 
 class EmployeeController {
     public router: express.Router;
@@ -17,11 +18,12 @@ class EmployeeController {
         private employeeService: EmployeeService
     ) {
         this.router = express.Router();
+
         this.router.get("/", authenticateMiddleware, this.getAllEmployees);
-        this.router.get("/:id", authenticateMiddleware, authorizeMiddleware([Role.HR]), this.getEmployeeById);
+        this.router.get("/:id", authenticateMiddleware, this.getEmployeeById);
         this.router.post("/", authenticateMiddleware, authorizeMiddleware([Role.HR]), this.createEmployee);
-        this.router.put("/:id", this.updateEmployee);
-        this.router.delete("/:id", this.removeEmployee);
+        this.router.put("/:id", authenticateMiddleware, authorizeMiddleware([Role.HR]), this.updateEmployee);
+        this.router.delete("/:id", authenticateMiddleware, authorizeMiddleware([Role.HR]), this.removeEmployee);
         this.router.post("/login", this.loginEmployee);
     }
 
@@ -97,8 +99,13 @@ class EmployeeController {
 
     loginEmployee = async (req: express.Request, res: ResponseWithPayload, next: NextFunction) => {
         try {
-            const { email, password } = req.body;
-            const tokenAndEmployeeDetails = await this.employeeService.loginEmployee(email, password);
+            // const { email, password } = req.body;
+            const loginEmployeeDto = plainToInstance(LoginEmployeeDto, req.body);
+            const errors = await validate(loginEmployeeDto);
+            if (errors.length > 0) {
+                throw new ValidationException(errors);
+            }
+            const tokenAndEmployeeDetails = await this.employeeService.loginEmployee(loginEmployeeDto);
             res.status(200).sendPayload("OK", tokenAndEmployeeDetails, null);
         } catch (error) {
             next(error);
