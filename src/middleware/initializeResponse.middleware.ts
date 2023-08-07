@@ -2,11 +2,12 @@ import { NextFunction, Request } from "express";
 import { ResponseWithPayload } from "../util/responseWithPayload.interface";
 import { ResponseMetadata } from "../util/responseMetadata.class";
 import { ValidationTypes } from "class-validator";
+import Employee from "../entity/employee.entity";
 
 function initialzeResponseMiddleware(_req: Request, res: ResponseWithPayload, next: NextFunction) {
     res.startTime = Date.now();
 
-    res.sendPayload = function <T>( message: string, data: T | null, errors: ValidationTypes | null) {
+    res.sendPayload = function <T>(message: string, data: T | null, errors: ValidationTypes | null) {
         const meta: ResponseMetadata = {
             length: 0,
             took: 0,
@@ -21,9 +22,17 @@ function initialzeResponseMiddleware(_req: Request, res: ResponseWithPayload, ne
             meta.length = 0;
             meta.total = 0;
         } else if (Array.isArray(data)) {
+            data.forEach((d) => {
+                if (d instanceof Employee) {
+                    delete d.password
+                }
+            })
             meta.length = data.length;
             meta.total = data.length;
         } else {
+            if (data instanceof Employee) {
+                delete data.password;
+            }
             meta.length = 1;
             meta.total = 1;
         }
