@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { FindOptionsRelations, Repository } from "typeorm";
 import Department from "../entity/department.entity";
 
 class DepartmentRepository {
@@ -10,9 +10,12 @@ class DepartmentRepository {
         return this.departmentRepository.find();
     }
 
-    findOneDepartmentById(id: number): Promise<Department> {
-        return this.departmentRepository.findOneBy({
-            id: id
+    findOneDepartmentById(id: number, relations?: FindOptionsRelations<Department>): Promise<Department> {
+        return this.departmentRepository.findOne({
+            where: {
+                id
+            },
+            relations,
         });
     }
 

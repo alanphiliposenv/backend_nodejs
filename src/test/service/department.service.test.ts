@@ -115,23 +115,51 @@ describe("Department Service Tests", () => {
     describe("Test for removeDepartment", () => {
         const id = 1;
         const mockSoftRemoveDepartment = jest.fn();
+        const sampleDepartment = {
+            ...sampleDepartments[0],
+            employees: []
+        }
         beforeEach(() => {
-            when(mockSoftRemoveDepartment).calledWith(sampleDepartments[0]).mockResolvedValueOnce(sampleDepartments[0]);
+            when(mockSoftRemoveDepartment).calledWith(sampleDepartment).mockResolvedValueOnce(sampleDepartment);
             departmentRepository.removeDepartment = mockSoftRemoveDepartment;
         });
 
         test("Test invalid id", () => {
             const mockFindOOneDepartmentById = jest.fn();
-            when(mockFindOOneDepartmentById).calledWith(id).mockResolvedValueOnce(null);
+            when(mockFindOOneDepartmentById).calledWith(id, { employees: true }).mockResolvedValueOnce(null);
             departmentRepository.findOneDepartmentById = mockFindOOneDepartmentById;
             expect(departmentService.removeDepartment(id)).rejects.toThrow(HttpException);
         });
 
-        test("Test valid id", () => {
+        test("Test valid id with employees pre", () => {
             const mockFindOOneDepartmentById = jest.fn();
-            when(mockFindOOneDepartmentById).calledWith(id).mockResolvedValueOnce(sampleDepartments[0]);
+            when(mockFindOOneDepartmentById).calledWith(id, { employees: true }).mockResolvedValueOnce({
+                ...sampleDepartment,
+                employees: [
+                    {
+                        id: 1,
+                        name: "name1"
+                    },
+                    {
+                        id: 2,
+                        name: "name2"
+                    },
+                    {
+                        id: 3,
+                        name: "name3"
+                    }
+                ]
+            });
             departmentRepository.findOneDepartmentById = mockFindOOneDepartmentById;
-            expect(departmentService.removeDepartment(id)).resolves.toStrictEqual(sampleDepartments[0]);
+            expect(departmentService.removeDepartment(id)).rejects.toThrow(HttpException);
+        });
+
+
+        test("Test valid id without employees", () => {
+            const mockFindOOneDepartmentById = jest.fn();
+            when(mockFindOOneDepartmentById).calledWith(id, { employees: true }).mockResolvedValueOnce(sampleDepartment);
+            departmentRepository.findOneDepartmentById = mockFindOOneDepartmentById;
+            expect(departmentService.removeDepartment(id)).resolves.toStrictEqual(sampleDepartment);
         });
 
     });

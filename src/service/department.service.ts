@@ -36,9 +36,14 @@ class DepartmentService {
     }
 
     async removeDepartment(id: number): Promise<Department> {
-        const department = await this.departmentRepository.findOneDepartmentById(id);
+        const department = await this.departmentRepository.findOneDepartmentById(id, {
+            employees: true
+        });
         if (!department) {
             throw new HttpException(404, "Department not found");
+        }
+        if (department.employees.length > 0) {
+            throw new HttpException(400, "Employees present in Deparment");
         }
         return this.departmentRepository.removeDepartment(department);
     }
