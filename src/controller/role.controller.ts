@@ -10,7 +10,6 @@ class RoleController {
         private roleService: RoleService
     ) {
         this.router = express.Router();
-        this.roleService = new RoleService();
 
         this.router.get("/", authenticateMiddleware, this.getAllRoles);
     }

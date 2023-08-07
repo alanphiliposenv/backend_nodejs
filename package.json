@@ -4,13 +4,13 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "jest --verbose",
-    "test-coverage": "jest --coverage",
+    "test": "jest --verbose --setupFiles dotenv/config",
+    "test-coverage": "jest --coverage --setupFiles dotenv/config",
     "build": "rm -rf dist && tsc && cp ./.env ./dist/.env",
     "start-server": "npm run build && node dist/app.js",
-    "migration:generate": "npm run build && node -r dotenv/config  node_modules//.bin/typeorm migration:generate -d dist/db/postgres.db.js",
-    "migration:run": "npm run build && node -r dotenv/config  node_modules//.bin/typeorm migration:run  -d dist/db/postgres.db.js",
-    "migration:revert": "npm run build && node -r dotenv/config  node_modules//.bin/typeorm migration:revert -d dist/db/postgres.db.js"
+    "migration:generate": "npm run build && typeorm migration:generate -d dist/db/postgres.db.js",
+    "migration:run": "npm run build && typeorm migration:run  -d dist/db/postgres.db.js",
+    "migration:revert": "npm run build && typeorm migration:revert -d dist/db/postgres.db.js"
   },
   "keywords": [],
   "author": "",

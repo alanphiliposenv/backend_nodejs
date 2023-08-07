@@ -6,7 +6,7 @@ import DepartmentService from "../service/department.service";
 
 const departRepository = new DepartmentRepository(dataSource.getRepository(Department));
 
-const departmentService = new DepartmentService(departRepository);
+export const departmentService = new DepartmentService(departRepository);
 
 const departmentController = new DepartmentController(departmentService);
 const departmentRouter = departmentController.router;

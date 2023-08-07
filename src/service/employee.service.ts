@@ -15,7 +15,7 @@ class EmployeeService {
     ) { }
 
     getAllEmployees(): Promise<Employee[]> {
-        return this.employeeRepository.findAllEmployee();
+        return this.employeeRepository.findAllEmployees();
     }
 
     async getEmployeeById(id: number): Promise<Employee | null> {
@@ -42,7 +42,8 @@ class EmployeeService {
         newEmployee.role = employeeDto.role;
         newEmployee.departmentId = department.id;
 
-        return this.employeeRepository.saveEmployee(newEmployee);
+        const employee = await this.employeeRepository.saveEmployee(newEmployee);
+        return employee;
     }
 
 

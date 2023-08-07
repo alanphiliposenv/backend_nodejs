@@ -6,7 +6,7 @@ class EmployeeRepository {
         private employeeRepository: Repository<Employee>
     ) { }
 
-    findAllEmployee(): Promise<Employee[]> {
+    findAllEmployees(): Promise<Employee[]> {
         return this.employeeRepository.find();
     }
 
