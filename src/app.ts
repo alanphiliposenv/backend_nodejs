@@ -11,9 +11,10 @@ import departmentRouter from "./routes/department.route"
 import employeeRouter from "./routes/employee.route"
 import roleRouter from "./routes/role.route";
 import logger from "./util/logger.util";
+import EmployeeDto from "./dto/employee.dto";
 
 const server = express();
-
+console.log(EmployeeDto)
 server.use(initialzeResponseMiddleware);
 
 server.use(express.json());

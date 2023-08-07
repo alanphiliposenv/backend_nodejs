@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Router } from "express";
 import DepartmentService from "../service/department.service";
-import authenticateMiddleware from "../middleware/authenticate.middleware";
-import authorizeMiddleware from "../middleware/authorize.middleware";
+import authenticate from "../middleware/authenticate.middleware";
+import authorize from "../middleware/authorize.middleware";
 import { ResponseWithPayload } from "../util/responseWithPayload.interface";
 import { plainToInstance } from "class-transformer";
 import IdDto from "../dto/id.dto";
@@ -9,6 +9,8 @@ import { Role } from "../util/role.enum";
 import DepartmentDto from "../dto/depaartment.dto";
 import { validate } from "class-validator";
 import ValidationException from "../exceptions/validation.exception";
+import validation from "../middleware/validation.middleware";
+import { RequestWithDTO } from "../util/requestWithDto.util";
 
 class DepartmentController {
     public router: Router;
@@ -17,11 +19,11 @@ class DepartmentController {
         private departmentService: DepartmentService
     ) {
         this.router = express.Router();
-        this.router.get("/", authenticateMiddleware, this.getAllDepartments);
-        this.router.get("/:id", authenticateMiddleware, this.getDepartmentById);
-        this.router.post("/", authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.createDepartment);
-        this.router.put("/:id", authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.updateDepartment);
-        this.router.delete("/:id", authenticateMiddleware, authorizeMiddleware([Role.ADMIN]), this.removeDepartment);
+        this.router.get("/", authenticate, this.getAllDepartments);
+        this.router.get("/:id", authenticate, validation(IdDto, "params"), this.getDepartmentById);
+        this.router.post("/", authenticate, authorize([Role.ADMIN]), validation(DepartmentDto, "body"), this.createDepartment);
+        this.router.put("/:id", authenticate, authorize([Role.ADMIN]), validation(IdDto, "params"), validation(DepartmentDto, "body"), this.updateDepartment);
+        this.router.delete("/:id", authenticate, authorize([Role.ADMIN]), validation(IdDto, "params"), this.removeDepartment);
     }
 
     getAllDepartments = async (_req: Request, res: ResponseWithPayload, next: NextFunction) => {
@@ -33,14 +35,9 @@ class DepartmentController {
         }
     }
 
-    getDepartmentById = async (req: Request, res: ResponseWithPayload, next: NextFunction) => {
+    getDepartmentById = async (req: RequestWithDTO<IdDto, any>, res: ResponseWithPayload, next: NextFunction) => {
         try {
-            const idDto = plainToInstance(IdDto, req.params);
-            const errors = await validate(idDto);
-            if (errors.length > 0) {
-                throw new ValidationException(errors);
-            }
-            const department = await this.departmentService.getDepartmentById(idDto.id);
+            const department = await this.departmentService.getDepartmentById(req.params.id);
             res.status(200).sendPayload("OK", department, null);;
         } catch (error) {
             next(error);
@@ -48,33 +45,18 @@ class DepartmentController {
 
     }
 
-    createDepartment = async (req: Request, res: ResponseWithPayload, next: NextFunction) => {
+    createDepartment = async (req: RequestWithDTO<any, DepartmentDto>, res: ResponseWithPayload, next: NextFunction) => {
         try {
-            const departmentDto: DepartmentDto = plainToInstance(DepartmentDto, req.body);
-            const errors = await validate(departmentDto);
-            if (errors.length > 0) {
-                throw new ValidationException(errors);
-            }
-            const createdDepartment = await this.departmentService.createDepartment(departmentDto);
+            const createdDepartment = await this.departmentService.createDepartment(req.body);
             res.status(201).sendPayload("OK", createdDepartment, null);;
         } catch (error) {
             next(error);
         }
     }
 
-    updateDepartment = async (req: Request, res: ResponseWithPayload, next: NextFunction) => {
+    updateDepartment = async (req: RequestWithDTO<IdDto, DepartmentDto>, res: ResponseWithPayload, next: NextFunction) => {
         try {
-            const idDto = plainToInstance(IdDto, req.params);
-            const idErrors = await validate(idDto)
-            if (idErrors.length > 0) {
-                throw new ValidationException(idErrors);
-            }
-            const departmentDto: DepartmentDto = plainToInstance(DepartmentDto, req.body);
-            const departmentErrors = await validate(departmentDto)
-            if (departmentErrors.length > 0) {
-                throw new ValidationException(departmentErrors);
-            }
-            const updatedDepartment = await this.departmentService.updateDepartment(idDto.id, departmentDto);
+            const updatedDepartment = await this.departmentService.updateDepartment(req.params.id, req.body);
             res.status(200).sendPayload("OK", updatedDepartment, null);;
         } catch (error) {
             next(error);
@@ -82,14 +64,9 @@ class DepartmentController {
     }
 
 
-    removeDepartment = async (req: Request, res: ResponseWithPayload, next: NextFunction) => {
+    removeDepartment = async (req: RequestWithDTO<IdDto, any>, res: ResponseWithPayload, next: NextFunction) => {
         try {
-            const idDto = plainToInstance(IdDto, req.params);
-            const idErrors = await validate(idDto)
-            if (idErrors.length > 0) {
-                throw new ValidationException(idErrors);
-            }
-            const department = await this.departmentService.removeDepartment(idDto.id);
+            const department = await this.departmentService.removeDepartment(req.params.id);
             res.status(200).sendPayload("OK", department, null);
         } catch (error) {
             next(error);
