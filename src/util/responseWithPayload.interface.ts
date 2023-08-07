@@ -3,6 +3,7 @@ import { ValidationErrors } from "./errors.type";
 
 export interface ResponseWithPayload extends Response {
     startTime: number;
+    total: number;
 
     sendPayload<T>(
         message: string,

@@ -1,9 +1,13 @@
-import { IsNumber, IsOptional } from "class-validator";
+import { IsNumber, IsNumberString, IsOptional } from "class-validator";
 
 class GetAllEmployeesQueryDto {
-    @IsNumber()
+    @IsNumberString()
     @IsOptional()
     page: number;
+
+    @IsNumberString()
+    @IsOptional()
+    pageSize: number;
 }
 
 export default GetAllEmployeesQueryDto;

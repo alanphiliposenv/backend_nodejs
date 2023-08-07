@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import { jwtPayload } from "../util/jwtPayload.type";
 import DepartmentService from "./department.service";
 import LoginEmployeeDto from "../dto/loginEmployee.dto";
+import GetAllEmployeesQueryDto from "../dto/getAllEmployeesQuery.dto";
 
 class EmployeeService {
     constructor(
@@ -14,8 +15,19 @@ class EmployeeService {
         private departmentService: DepartmentService
     ) { }
 
-    getAllEmployees(): Promise<Employee[]> {
-        return this.employeeRepository.findAllEmployees();
+    getAllEmployees(getAllEmployeesQueryDto: GetAllEmployeesQueryDto): Promise<[Employee[], number]> {
+        let page = getAllEmployeesQueryDto.page || 1;
+        let take = getAllEmployeesQueryDto.pageSize || 10;
+        if (page <= 0) {
+            page = 0;
+        } else {
+            page = page - 1;
+        }
+        if (take <= 0) {
+            take = 10;
+        }
+        const skip = page*take;
+        return this.employeeRepository.findAllEmployees(skip, take);
     }
 
     async getEmployeeById(id: number): Promise<Employee | null> {

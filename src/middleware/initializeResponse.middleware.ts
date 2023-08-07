@@ -22,7 +22,6 @@ function initialzeResponseMiddleware(req: RequestWithId, res: ResponseWithPayloa
 
         if (data === null) {
             meta.length = 0;
-            meta.total = 0;
         } else if (Array.isArray(data)) {
             data.forEach((d) => {
                 if (d instanceof Employee) {
@@ -30,15 +29,14 @@ function initialzeResponseMiddleware(req: RequestWithId, res: ResponseWithPayloa
                 }
             })
             meta.length = data.length;
-            meta.total = data.length;
         } else {
             if (data instanceof Employee) {
                 delete data.password;
             }
             meta.length = 1;
-            meta.total = 1;
         }
         const endTime: number = Date.now();
+        meta.total = res.total ? res.total : meta.total;
         meta.took = endTime - res.startTime;
         res.json({
             data,

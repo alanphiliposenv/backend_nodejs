@@ -13,6 +13,7 @@ import LoginEmployeeDto from "../dto/loginEmployee.dto";
 import UpdateEmployeeDto from "../dto/updateEmployee.dto";
 import validation from "../middleware/validation.middleware";
 import { RequestWithDTO } from "../util/requestWithDto.util";
+import GetAllEmployeesQueryDto from "../dto/getAllEmployeesQuery.dto";
 
 class EmployeeController {
     public router: express.Router;
@@ -22,7 +23,7 @@ class EmployeeController {
     ) {
         this.router = express.Router();
 
-        this.router.get("/", authenticate, this.getAllEmployees);
+        this.router.get("/", authenticate, validation(GetAllEmployeesQueryDto, "query"), this.getAllEmployees);
         this.router.get("/:id", authenticate, validation(IdDto, "params"), this.getEmployeeById);
         this.router.post("/", authenticate, authorize([Role.ADMIN]), validation(EmployeeDto, "body"), this.createEmployee);
         this.router.put("/:id", authenticate, authorize([Role.ADMIN]), validation(IdDto, "params"), validation(EmployeeDto, "body"), this.updateReplaceEmployee);
@@ -31,16 +32,17 @@ class EmployeeController {
         this.router.post("/login", validation(LoginEmployeeDto, "body"), this.loginEmployee);
     }
 
-    getAllEmployees = async (_req: express.Request, res: ResponseWithPayload, next: NextFunction) => {
+    getAllEmployees = async (req: RequestWithDTO<any, any, GetAllEmployeesQueryDto>, res: ResponseWithPayload, next: NextFunction) => {
         try {
-            const employees = await this.employeeService.getAllEmployees();
+            const [employees, total] = await this.employeeService.getAllEmployees(req.query);
+            res.total = total;
             res.status(200).sendPayload("OK", employees, null);
         } catch (error) {
             next(error);
         }
     }
 
-    getEmployeeById = async (req: RequestWithDTO<IdDto, any>, res: ResponseWithPayload, next: NextFunction) => {
+    getEmployeeById = async (req: RequestWithDTO<IdDto>, res: ResponseWithPayload, next: NextFunction) => {
         try {
             const employee = await this.employeeService.getEmployeeById(req.params.id);
             res.status(200).sendPayload("OK", employee, null);
@@ -76,7 +78,7 @@ class EmployeeController {
         }
     }
 
-    removeEmployee = async (req: RequestWithDTO<IdDto, any>, res: ResponseWithPayload, next: NextFunction) => {
+    removeEmployee = async (req: RequestWithDTO<IdDto>, res: ResponseWithPayload, next: NextFunction) => {
         try {
             await this.employeeService.removeEmployee(req.params.id);
             res.status(200).sendPayload("OK", null, null);

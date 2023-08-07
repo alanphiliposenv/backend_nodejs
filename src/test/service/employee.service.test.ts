@@ -13,6 +13,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import LoginEmployeeDto from "../../dto/loginEmployee.dto";
 import UpdateEmployeeDto from "../../dto/updateEmployee.dto";
+import GetAllEmployeesQueryDto from "../../dto/getAllEmployeesQuery.dto";
 
 describe("Employee Service Tests", () => {
     let employeeService: EmployeeService;
@@ -75,17 +76,60 @@ describe("Employee Service Tests", () => {
     });
 
     describe("Test for getAllEmployees", () => {
-        test("Test 0 employees", () => {
+        test("Test with no page and pageSize", () => {
+            const inputDto = {} as GetAllEmployeesQueryDto;
             const mockFunction = jest.fn();
-            when(mockFunction).calledWith().mockResolvedValueOnce([]);
+            when(mockFunction).calledWith(0, 10).mockResolvedValueOnce([sampleEmployees, 20]);
             employeeRepository.findAllEmployees = mockFunction;
-            expect(employeeService.getAllEmployees()).resolves.toEqual([]);
+            expect(employeeService.getAllEmployees(inputDto)).resolves.toStrictEqual([sampleEmployees, 20]);
         });
-        test("Test n employees", () => {
+        test("Test with only page", () => {
+            const inputDto = {
+                page: 2,
+            } as GetAllEmployeesQueryDto;
             const mockFunction = jest.fn();
-            when(mockFunction).calledWith().mockResolvedValueOnce(sampleEmployees);
+            when(mockFunction).calledWith(10, 10).mockResolvedValueOnce([sampleEmployees, 20]);
             employeeRepository.findAllEmployees = mockFunction;
-            expect(employeeService.getAllEmployees()).resolves.toEqual(sampleEmployees);
+            expect(employeeService.getAllEmployees(inputDto)).resolves.toStrictEqual([sampleEmployees, 20]);
+        });
+        test("Test with only pageSize", () => {
+            const inputDto = {
+                pageSize: 2,
+            } as GetAllEmployeesQueryDto;
+            const mockFunction = jest.fn();
+            when(mockFunction).calledWith(0, 2).mockResolvedValueOnce(sampleEmployees);
+            employeeRepository.findAllEmployees = mockFunction;
+            expect(employeeService.getAllEmployees(inputDto)).resolves.toEqual(sampleEmployees);
+        });
+        test("Test with page and pageSize", () => {
+            const inputDto = {
+                page: 3,
+                pageSize: 2,
+            } as GetAllEmployeesQueryDto;
+            const mockFunction = jest.fn();
+            when(mockFunction).calledWith(4, 2).mockResolvedValueOnce(sampleEmployees);
+            employeeRepository.findAllEmployees = mockFunction;
+            expect(employeeService.getAllEmployees(inputDto)).resolves.toEqual(sampleEmployees);
+        });
+        test("Test with zero page and pageSize", () => {
+            const inputDto = {
+                page: 0,
+                pageSize: 0,
+            } as GetAllEmployeesQueryDto;
+            const mockFunction = jest.fn();
+            when(mockFunction).calledWith(0, 10).mockResolvedValueOnce(sampleEmployees);
+            employeeRepository.findAllEmployees = mockFunction;
+            expect(employeeService.getAllEmployees(inputDto)).resolves.toEqual(sampleEmployees);
+        });
+        test("Test with negative page and pageSize", () => {
+            const inputDto = {
+                page: -3,
+                pageSize: -2,
+            } as GetAllEmployeesQueryDto;
+            const mockFunction = jest.fn();
+            when(mockFunction).calledWith(0, 10).mockResolvedValueOnce(sampleEmployees);
+            employeeRepository.findAllEmployees = mockFunction;
+            expect(employeeService.getAllEmployees(inputDto)).resolves.toEqual(sampleEmployees);
         });
     });
 

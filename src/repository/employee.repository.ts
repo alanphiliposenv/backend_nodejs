@@ -6,8 +6,11 @@ class EmployeeRepository {
         private employeeRepository: Repository<Employee>
     ) { }
 
-    findAllEmployees(): Promise<Employee[]> {
-        return this.employeeRepository.find();
+    findAllEmployees(skip: number, take: number): Promise<[Employee[], number]> {
+        return this.employeeRepository.findAndCount({
+            skip,
+            take
+        });
     }
 
     findOneEmployeeById(id: number, relations?: FindOptionsRelations<Employee>): Promise<Employee> {
