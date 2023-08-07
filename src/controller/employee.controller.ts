@@ -79,7 +79,7 @@ class EmployeeController {
     removeEmployee = async (req: RequestWithDTO<IdDto, any>, res: ResponseWithPayload, next: NextFunction) => {
         try {
             await this.employeeService.removeEmployee(req.params.id);
-            res.status(204).send();
+            res.status(200).sendPayload("OK", null, null);
         } catch (error) {
             next(error);
         }

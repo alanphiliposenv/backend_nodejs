@@ -1,10 +1,12 @@
-import { NextFunction, Request } from "express";
+import { NextFunction } from "express";
 import { ResponseWithPayload } from "../util/responseWithPayload.interface";
 import { ResponseMetadata } from "../util/responseMetadata.class";
 import { ValidationTypes } from "class-validator";
 import Employee from "../entity/employee.entity";
+import logger from "../util/logger.util";
+import { RequestWithId } from "../util/requestWithId.interface";
 
-function initialzeResponseMiddleware(_req: Request, res: ResponseWithPayload, next: NextFunction) {
+function initialzeResponseMiddleware(req: RequestWithId, res: ResponseWithPayload, next: NextFunction) {
     res.startTime = Date.now();
 
     res.sendPayload = function <T>(message: string, data: T | null, errors: ValidationTypes | null) {
@@ -44,6 +46,9 @@ function initialzeResponseMiddleware(_req: Request, res: ResponseWithPayload, ne
             message,
             meta,
         });
+        if (data !== null) {
+            logger.info(`${req.id} Response: ${res.statusCode} ${message} ${meta.took}ms`);
+        }
     };
     next();
 }
